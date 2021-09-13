@@ -1,30 +1,23 @@
-const oracledb = require('oracledb');
-const { cns } = require('../config/index');
+const { Pool } = require('pg');
+const { config } = require('../config/index');
+const pool = new Pool(config);
 
 const getProductos = async (req, res) => {
-  const conn = await oracledb.getConnection(cns);
-  const result = await conn.execute('SELECT * FROM PRODUCTO ORDER BY ID', [], {
-    outFormat: oracledb.OUT_FORMAT_OBJECT,
-  });
+  const result = await pool.query(
+    'SELECT * FROM producto ORDER BY producto."ID"'
+  );
   res.status(200).json(result.rows);
 };
 const getProductoID = async (req, res) => {
   const { id } = req.body;
-  console.log(id);
-  const conn = await oracledb.getConnection(cns);
-  const result = await conn.execute(
-    'SELECT * FROM PRODUCTO WHERE ID = :id',
-    [id],
-    {
-      outFormat: oracledb.OUT_FORMAT_OBJECT,
-    }
+  const result = await pool.query(
+    `SELECT * FROM producto WHERE producto."ID" = ${id}`
   );
   res.status(200).json(result.rows);
 };
 const createProducto = async (req, res) => {
-  const conn = await oracledb.getConnection(cns);
   const { producto, precio, descripcion, cantidad } = req.body;
-  const sql = await conn.execute(
+  const sql = await pool.query(
     'CALL Insertar_Producto(:producto,:precio,:descripcion,:cantidad)',
     [producto, precio, descripcion, cantidad],
     { autoCommit: true }
@@ -42,10 +35,9 @@ const createProducto = async (req, res) => {
 };
 
 const updateProducto = async (req, res) => {
-  const conn = await oracledb.getConnection(cns);
   const id = parseInt(req.params.id);
   const { producto, precio, descripcion, cantidad } = req.body;
-  const sql = await conn.execute(
+  const sql = await pool.query(
     'CALL ACTUALIZAR_PRODUCTO(:id,:producto,:precio,:descripcion,:cantidad)',
     [id, producto, precio, descripcion, cantidad],
     { autoCommit: true }
@@ -63,9 +55,8 @@ const updateProducto = async (req, res) => {
 };
 
 const deleteProducto = async (req, res) => {
-  const conn = await oracledb.getConnection(cns);
   const id = parseInt(req.params.id);
-  const sql = await conn.execute('DELETE PRODUCTO WHERE ID = :id', [id], {
+  const sql = await pool.query('DELETE PRODUCTO WHERE ID = :id', [id], {
     autoCommit: true,
   });
   if (sql) {
@@ -81,44 +72,24 @@ const deleteProducto = async (req, res) => {
 };
 
 const getProductoMenosVendido = async (req, res) => {
-  const conn = await oracledb.getConnection(cns);
-  const result = await conn.execute(
-    'SELECT PRODUCTO_MENOS_VENDIDO FROM DUAL',
-    [],
-    {
-      outFormat: oracledb.OUT_FORMAT_OBJECT,
-    }
-  );
+  const result = await pool.query('', [], {});
   res.status(200).json(result.rows);
 };
 const getProductoMasVendido = async (req, res) => {
-  const conn = await oracledb.getConnection(cns);
-  const result = await conn.execute(
-    'SELECT PRODUCTO_MAS_VENDIDO FROM DUAL',
-    [],
-    {
-      outFormat: oracledb.OUT_FORMAT_OBJECT,
-    }
-  );
+  const result = await pool.query('', [], {});
   res.status(200).json(result.rows);
 };
 const getTotalProductos = async (req, res) => {
-  const conn = await oracledb.getConnection(cns);
-  const result = await conn.execute(
-    'SELECT SUM(CANTIDAD) AS TOTAL FROM PRODUCTO',
+  const result = await pool.query(
+    'SELECT SUM(producto."CANTIDAD") AS TOTAL FROM PRODUCTO',
     [],
-    {
-      outFormat: oracledb.OUT_FORMAT_OBJECT,
-    }
+    {}
   );
   res.status(200).json(result.rows);
 };
 
 const getTotalVentas = async (req, res) => {
-  const conn = await oracledb.getConnection(cns);
-  const result = await conn.execute('SELECT TOTAL_VENTA_HOY FROM DUAL', [], {
-    outFormat: oracledb.OUT_FORMAT_OBJECT,
-  });
+  const result = await pool.query('', [], {});
   res.status(200).json(result.rows);
 };
 
