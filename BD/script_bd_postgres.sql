@@ -1,7 +1,7 @@
 CREATE TABLE producto(
   id SERIAL,
   producto VARCHAR(100),
-  predicio DECIMAL(10,2),
+  precio DECIMAL(10,2),
   descripcion VARCHAR(300),
   cantidad INTEGER,
   CONSTRAINT id_pk PRIMARY KEY(id)

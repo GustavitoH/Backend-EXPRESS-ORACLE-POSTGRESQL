@@ -3,20 +3,27 @@ const { config } = require('../config/index');
 const pool = new Pool(config);
 
 const getFactura = async (req, res) => {
-  const response = await pool.query('SELECT * FROM factura')
+  const response = await pool.query('SELECT * FROM factura');
   res.status(200).json(response.rows);
 };
 
 const createFactura = async (req, res) => {
-  const {cliente, fecha, subtotal, total} = req.body;
+  const { cliente, subtotal, total } = req.body;
   const response = await pool.query(`INSERT INTO factura(cliente, fecha, subtotal, total) 
-  VALUES('${cliente}', '${fecha}', ${subtotal}, ${total})`);
-  res.json({
-    messagge: 'Invoice created successfully!',
+  VALUES('${cliente}', current_date, ${subtotal}, ${total})`);
+  if (response) {
+    res.json({
+      messagge: 'Factura creada exitosamente!',
       body: {
-        replies: {cliente, fecha, subtotal, total}
-      }
-  })
+        replies: { cliente, subtotal, total },
+      },
+    });
+  }
+  if (!response) {
+    res.json({
+      message: 'Error de insertado',
+    });
+  }
 };
 
 module.exports = {
