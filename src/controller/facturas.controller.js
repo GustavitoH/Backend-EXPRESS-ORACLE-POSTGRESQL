@@ -1,32 +1,22 @@
-const oracledb = require('oracledb');
-const { cns } = require('../config/index');
+const { Pool } = require('pg');
+const { config } = require('../config/index');
+const pool = new Pool(config);
 
 const getFactura = async (req, res) => {
-  const conn = await oracledb.getConnection(cns);
-  const result = await conn.execute('SELECT * FROM FACTURA ORDER BY ID', [], {
-    outFormat: oracledb.OUT_FORMAT_OBJECT,
-  });
-  res.status(200).json(result.rows);
+  const response = await pool.query('SELECT * FROM factura')
+  res.status(200).json(response.rows);
 };
 
 const createFactura = async (req, res) => {
-  const conn = await oracledb.getConnection(cns);
-  const { cliente, subtotal, total } = req.body;
-  const sql = await conn.execute(
-    'CALL Insertar_Factura(:cliente,:subtotal,:total)',
-    [cliente, subtotal, total],
-    { autoCommit: true }
-  );
-  if (sql) {
-    res.status(201).json({
-      message: 'Factura insertada con éxito',
-    });
-  }
-  if (!sql) {
-    res.json({
-      message: 'Error de insertado',
-    });
-  }
+  const {cliente, fecha, subtotal, total} = req.body;
+  const response = await pool.query(`INSERT INTO factura(cliente, fecha, subtotal, total) 
+  VALUES('${cliente}', '${fecha}', ${subtotal}, ${total})`);
+  res.json({
+    messagge: 'Invoice created successfully!',
+      body: {
+        replies: {cliente, fecha, subtotal, total}
+      }
+  })
 };
 
 module.exports = {
